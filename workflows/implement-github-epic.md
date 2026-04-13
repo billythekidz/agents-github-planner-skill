@@ -22,7 +22,16 @@ This workflow is to be executed after all tasks have been fully detailed as comm
 
    **Action B: Document the Code Changes**
    - Post a **detailed comment** back into the Epic thread covering the exact code changes made for this task.
-   - If it is a **New or Deleted file**: Attach the actual file itself to the comment (DO NOT paste the full source code into a Markdown fenced code block).
+   - If it is a **New or Deleted file**: Since `gh` CLI does not natively support direct file uploads to issues, you MUST simulate a file attachment by embedding the entire source code inside a collapsible HTML `<details>` tag. 
+     *Example format to write to a temp markdown file, then run `gh issue comment <id> --body-file`*:
+     ```markdown
+     <details><summary>Click to view newly created file: filename.ext</summary>
+
+     \`\`\`language
+     (Full source code goes here)
+     \`\`\`
+     </details>
+     ```
    - If it is a **Modified file**: Include exactly the diff block or key snippets showing what changed.
    - Your comment MUST explicitly include these 4 sections:
      - **What**: Define clearly what this function, class, module or feature does. *(e.g., "This function validates the user email input format.")*
