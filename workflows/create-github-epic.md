@@ -12,10 +12,20 @@ This workflow automatically takes the current `implementation_plan.md` artifact 
    - If there are relevant scripts, configuration blocks, or terminal screenshots necessary for the plan, embed them directly or attach them to the issue via the GitHub CLI.
    - Extract the individual components from `Proposed Changes` to form actionable Subtask Issues.
    
-2. **Create the Epic (Main Issue)**
-   - Skip creating an intermediate temporary file (like `/tmp/epic_body.md`). Instead, directly use the source markdown file (e.g., `implementation_plan.md` or `architecture.md`) as the body of the Epic.
-   - Run `gh issue create --title "Epic: [Plan Title]" --body-file path/to/the_plan.md`
-   - Capture the `#ID` returned from the CLI.
+2. **Create the Epic (Main Issue) - RAW PUSH ONLY**
+   - **CRITICAL RULE**: ALL agent-generated plans (including `.md` and `.resolved` artifact paths) MUST be passed directly as raw files. DO NOT read the file into memory to summarize it, and DO NOT create intermediate summary files.
+     - *Target Path Example*: You must find and use the absolute path, for example: `C:\Users\theaux\.gemini\antigravity\brain\510581c8-9546-44a8-bd4b-e99310605606\artifacts\implementation_plan.md.resolved`
+   - **Method 1: GitHub CLI (Preferred)**
+     - Run: `gh issue create --title "Epic: [Plan Title]" --body-file /absolute/path/to/the_plan.md.resolved`
+   - **Method 2: GitHub API via PowerShell**
+     - If `gh` CLI is unavailable, use `Invoke-RestMethod` to push the raw string intact.
+     - Example:
+       ```powershell
+       $RawBody = Get-Content -Path "/absolute/path/to/the_plan.md.resolved" -Raw -Encoding UTF8
+       $JsonPayload = @{ title = "Epic: [Plan Title]"; body = $RawBody } | ConvertTo-Json -Depth 10
+       Invoke-RestMethod -Uri "https://api.github.com/repos/OWNER/REPO/issues" -Method Post -Headers @{"Authorization"="Bearer $env:GITHUB_TOKEN"} -Body $JsonPayload -ContentType "application/json"
+       ```
+   - Capture the `#ID` returned from the chosen method.
 
 // turbo-all
 3. **Comment Task Breakdown on the Epic**
