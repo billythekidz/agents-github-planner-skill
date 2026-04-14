@@ -19,15 +19,16 @@ This document describes the complete architecture of the GitHub Issue Lifecycle 
 
 ## 2. File Structure (After Reorganization)
 
-```
+```text
 ~/.gemini/                                    ← GLOBAL (all repos)
-├── GEMINI.md                                 ← Behavioral rules
-└── antigravity/global_workflows/
-    ├── create-github-epic.md                 ← /create-github-epic
-    ├── read-github-issue.md                  ← /read-github-issue
-    ├── search-github-issue.md                ← /search-github-issue
-    ├── update-github-issue.md                ← /update-github-issue
-    └── complete-github-task.md               ← /complete-github-task
+└── antigravity/modules/                      ← Modular structure
+    ├── github-lifecycle/
+    │   ├── global-rules/GEMINI.md
+    │   └── workflows/*                       ← /create-github-epic, etc.
+    └── resilient-sdlc/
+        ├── global-rules/resilient-sdlc.md
+        ├── workflows/apply-resilient-sdlc.md
+        └── skills/resilient-sdlc/SKILL.md
 
 <any-repo>/.agents/                           ← LOCAL (project-specific)
 ├── rules/
@@ -116,12 +117,20 @@ flowchart TD
 flowchart TB
     subgraph GLOBAL["Global Layer (~/.gemini/)"]
         direction TB
-        G1["GEMINI.md<br><i>Behavioral constraints</i>"]
-        G2["create-github-epic.md"]
-        G3["read-github-issue.md"]
-        G4["search-github-issue.md"]
-        G5["update-github-issue.md"]
-        G6["complete-github-task.md"]
+        subgraph MODULE1["github-lifecycle"]
+            direction TB
+            G1["GEMINI.md<br><i>Behavioral constraints</i>"]
+            G2["create-github-epic.md"]
+            G3["read-github-issue.md"]
+            G4["search-github-issue.md"]
+            G5["update-github-issue.md"]
+            G6["complete-github-task.md"]
+        end
+        subgraph MODULE2["resilient-sdlc"]
+            direction TB
+            G7["resilient-sdlc.md<br><i>Resilient SDLC Rule</i>"]
+            G8["apply-resilient-sdlc.md<br><i>Resilient Validation</i>"]
+        end
     end
 
     subgraph LOCAL["Local Layer (.agents/)"]
@@ -242,3 +251,5 @@ flowchart LR
 | 2026-04-12 | Deduplicated GEMINI.md | Removed CLI recipe duplication |
 | 2026-04-12 | Merged lifecycle rule | `github_issues_mandatory.md` → `github_lifecycle.md` |
 | 2026-04-12 | Deleted deprecated files | 5 files removed from local `.agents/` |
+| 2026-04-14 | Added Resilient SDLC | Copied SOLID & Impact Scope architecture rules to global |
+| 2026-04-14 | Modularized Repository | Split tools into github-lifecycle and resilient-sdlc modules |

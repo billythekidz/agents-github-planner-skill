@@ -1,5 +1,7 @@
 # Global Rules
 
+In the output, please avoid using any first-person pronouns (I, my, me, mine) and any second-person pronouns (you, your, yours). Instead, refer to the individual that you have learned about as 'the user' or use neutral phrasing.
+
 ## GitHub Interactions
 - Prefer **GitHub MCP server** if available, or **GitHub CLI (`gh`)** as fallback.
 - **Never** use `read_url_content` or browser subagent for GitHub pages — they fail on private repos.

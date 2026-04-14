@@ -10,20 +10,31 @@ Whenever you update a workflow here, all your agents get the update instantly.
 
 ## Repository Structure
 
-```
+```text
 .
 ├── ARCHITECTURE.md              ← Concept diagrams + Mermaid flows
-├── global-rules/
-│   └── GEMINI.md                ← Global behavioral constraints
-├── workflows/
-│   ├── create-github-epic.md    ← /create-github-epic
-│   ├── read-github-issue.md     ← /read-github-issue
-│   ├── search-github-issue.md   ← /search-github-issue
-│   ├── update-github-issue.md   ← /update-github-issue
-│   └── complete-github-task.md  ← /complete-github-task
-└── templates/
-    └── local-rules/
-        └── github_lifecycle.md  ← Per-project lifecycle rule (Copy this manually per project)
+└── modules/                     ← Modularized workflows, rules, and skills
+    ├── github-lifecycle/        ← Management commands for GitHub Epic & Issue lifecycles
+    │   ├── global-rules/
+    │   │   └── GEMINI.md
+    │   ├── workflows/
+    │   │   ├── create-github-epic.md
+    │   │   ├── read-github-issue.md
+    │   │   ├── search-github-issue.md
+    │   │   ├── update-github-issue.md
+    │   │   ├── implement-github-epic.md
+    │   │   └── complete-github-task.md
+    │   └── templates/
+    │       └── local-rules/
+    │           └── github_lifecycle.md
+    └── resilient-sdlc/          ← Deep knowledge mapping of SOLID to Ops limitations
+        ├── global-rules/
+        │   └── resilient-sdlc.md
+        ├── workflows/
+        │   └── apply-resilient-sdlc.md
+        └── skills/
+            └── resilient-sdlc/
+                └── SKILL.md
 ```
 
 ## How to Install (Symlink Method)
