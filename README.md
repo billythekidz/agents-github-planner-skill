@@ -49,16 +49,23 @@ cd C:\Users\theaux
 # 1. Backup old if needed
 Remove-Item -Path ".\.gemini\GEMINI.md" -Force
 Remove-Item -Path ".\.gemini\antigravity\global_workflows" -Recurse -Force
+Remove-Item -Path ".\.gemini\antigravity\skills\resilient-sdlc" -Recurse -Force
 
-# 2. Create Hardlink for GEMINI.md (Applies the global rules)
-New-Item -ItemType HardLink -Path ".\.gemini\GEMINI.md" -Target ".\github-workflows\global-rules\GEMINI.md" -Force
+# 2. Assign Global Rules via Hardlinks
+New-Item -ItemType HardLink -Path ".\.gemini\GEMINI.md" -Target ".\github-workflows\modules\github-lifecycle\global-rules\GEMINI.md" -Force
 
-# 3. Create Junction for global_workflows (Applies the workflows)
-New-Item -ItemType Junction -Path ".\.gemini\antigravity\global_workflows" -Target ".\github-workflows\workflows" -Force
+# 3. Mount Modular Workflows via Junctions
+New-Item -ItemType Directory -Path ".\.gemini\antigravity\global_workflows" -Force
+New-Item -ItemType Junction -Path ".\.gemini\antigravity\global_workflows\github-lifecycle" -Target ".\github-workflows\modules\github-lifecycle\workflows" -Force
+New-Item -ItemType Junction -Path ".\.gemini\antigravity\global_workflows\resilient-sdlc" -Target ".\github-workflows\modules\resilient-sdlc\workflows" -Force
+
+# 4. Mount Modular Skills via Junctions
+New-Item -ItemType Directory -Path ".\.gemini\antigravity\skills" -Force
+New-Item -ItemType Junction -Path ".\.gemini\antigravity\skills\resilient-sdlc" -Target ".\github-workflows\modules\resilient-sdlc\skills\resilient-sdlc" -Force
 ```
 
 ## How to Maintain
 
-1. **Edit any file**: Open this repo in your IDE and edit files under `/global-rules` or `/workflows`.
+1. **Edit any file**: Open this repo in your IDE and edit files under `/modules/*/global-rules` or `/modules/*/workflows`.
 2. **Auto-applied**: Because of the Symlinks/Hardlinks, your local agent instantaneously uses the updated version.
 3. **Save to Cloud**: Run `git commit -am "update"` and `git push` to back up your changes.
