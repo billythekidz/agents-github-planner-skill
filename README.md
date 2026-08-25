@@ -1,71 +1,60 @@
-# Agent-Agnostic GitHub Issues Architecture
+# GitHub Planner Agent Skills
 
-> A centralized repository for managing AI agent workflows (like Antigravity, Claude Code, Gemini CLI, etc.) through structured GitHub Issues.
+Two portable [Agent Skills](https://agentskills.io) installable through Vercel's `skills` CLI. The same source works with Codex, Claude Code, Gemini/Antigravity, OpenCode, Cursor, and other supported agents.
 
-## Why this Repo?
-This repository is the **Single Source of Truth** for global behavioral rules and workflows. 
-Instead of copying and pasting rules whenever you reinstall or run multiple agents, use **Symlinks** to bind your local agent configuration directories directly back to this repository.
+## Skills
 
-Whenever you update a workflow here, all your agents get the update instantly.
+### `github-issue-lifecycle`
 
-## Repository Structure
+Manages GitHub Issue and Epic work from context discovery through closure. It uses `gh` by default, GitHub REST API as fallback, and native sub-issues for independently tracked tasks without depending on agent-specific integrations.
+
+### `impact-scope-reduction`
+
+Applies SOLID, risk-based testing, and targeted operations to reduce change blast radius while protecting unrelated and stateful services.
+
+## Install
+
+List the skills before installing:
+
+```sh
+npx skills add billythekidz/agents-github-planner-skill --list
+```
+
+Install interactively to detected agents:
+
+```sh
+npx skills add billythekidz/agents-github-planner-skill
+```
+
+Install one skill globally:
+
+```sh
+npx skills add billythekidz/agents-github-planner-skill --skill github-issue-lifecycle -g
+npx skills add billythekidz/agents-github-planner-skill --skill impact-scope-reduction -g
+```
+
+Install both skills globally to every supported agent:
+
+```sh
+npx skills add billythekidz/agents-github-planner-skill --all -g
+```
+
+## Structure
 
 ```text
-.
-├── ARCHITECTURE.md              ← Concept diagrams + Mermaid flows
-└── modules/                     ← Modularized workflows, rules, and skills
-    ├── github-lifecycle/        ← Management commands for GitHub Epic & Issue lifecycles
-    │   ├── global-rules/
-    │   │   └── GEMINI.md
-    │   ├── workflows/
-    │   │   ├── create-github-epic.md
-    │   │   ├── read-github-issue.md
-    │   │   ├── search-github-issue.md
-    │   │   ├── update-github-issue.md
-    │   │   ├── implement-github-epic.md
-    │   │   └── complete-github-task.md
-    │   └── templates/
-    │       └── local-rules/
-    │           └── github_lifecycle.md
-    └── resilient-sdlc/          ← Deep knowledge mapping of SOLID to Ops limitations
-        ├── global-rules/
-        │   └── resilient-sdlc.md
-        ├── workflows/
-        │   └── apply-resilient-sdlc.md
-        └── skills/
-            └── resilient-sdlc/
-                └── SKILL.md
+skills/
+├── github-issue-lifecycle/
+│   ├── SKILL.md
+│   └── references/
+│       ├── github-access.md
+│       ├── read-github-issues.md
+│       ├── search-github-issues.md
+│       ├── create-github-epic.md
+│       ├── implement-github-epic.md
+│       ├── update-github-issue.md
+│       └── complete-github-task.md
+└── impact-scope-reduction/
+    └── SKILL.md
 ```
 
-## How to Install (Symlink Method)
-
-Clone the repo to a permanent location (e.g. `C:\Users\theaux\github-workflows`).
-Then, bind your agent directories to the repo via PowerShell (`Admin` normally required for SymbolicLink, but `Junction/HardLink` bypasses it).
-
-### For Antigravity / Gemini CLI:
-```powershell
-cd C:\Users\theaux
-
-# 1. Backup old if needed
-Remove-Item -Path ".\.gemini\GEMINI.md" -Force
-Remove-Item -Path ".\.gemini\antigravity\global_workflows" -Recurse -Force
-Remove-Item -Path ".\.gemini\antigravity\skills\resilient-sdlc" -Recurse -Force
-
-# 2. Assign Global Rules via Hardlinks
-New-Item -ItemType HardLink -Path ".\.gemini\GEMINI.md" -Target ".\github-workflows\modules\github-lifecycle\global-rules\GEMINI.md" -Force
-
-# 3. Mount Modular Workflows via Junctions
-New-Item -ItemType Directory -Path ".\.gemini\antigravity\global_workflows" -Force
-New-Item -ItemType Junction -Path ".\.gemini\antigravity\global_workflows\github-lifecycle" -Target ".\github-workflows\modules\github-lifecycle\workflows" -Force
-New-Item -ItemType Junction -Path ".\.gemini\antigravity\global_workflows\resilient-sdlc" -Target ".\github-workflows\modules\resilient-sdlc\workflows" -Force
-
-# 4. Mount Modular Skills via Junctions
-New-Item -ItemType Directory -Path ".\.gemini\antigravity\skills" -Force
-New-Item -ItemType Junction -Path ".\.gemini\antigravity\skills\resilient-sdlc" -Target ".\github-workflows\modules\resilient-sdlc\skills\resilient-sdlc" -Force
-```
-
-## How to Maintain
-
-1. **Edit any file**: Open this repo in your IDE and edit files under `/modules/*/global-rules` or `/modules/*/workflows`.
-2. **Auto-applied**: Because of the Symlinks/Hardlinks, your local agent instantaneously uses the updated version.
-3. **Save to Cloud**: Run `git commit -am "update"` and `git push` to back up your changes.
+Each directory is self-contained so `npx skills` installs the instructions and their supporting references together.

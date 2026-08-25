@@ -1,255 +1,88 @@
-# GitHub Issue Lifecycle — Agent Workflow Architecture
+# Agent Skills Architecture
 
-> A portable, agent-agnostic system for tracking code changes through GitHub Issues.
-> Designed to work with **Antigravity**, **Claude Code**, **Gemini CLI**, **OpenCode**, or any future **MCP-based agent**.
+This repository packages two independent, agent-agnostic skills using the open Agent Skills specification and Vercel's `npx skills` discovery layout.
 
----
-
-## 1. Overview
-
-This document describes the complete architecture of the GitHub Issue Lifecycle system used across all projects. The system ensures every code change is documented, tracked, and discoverable through structured GitHub Issues.
-
-### Design Principles
-- **Global = Behavior** — GitHub lifecycle workflows apply to ALL repos
-- **Local = Context** — Project-specific guards (build rules, config paths) stay local
-- **1 File = 1 Comment** — Every file changed gets its own documented GitHub comment
-- **Agent-Agnostic** — Portable across Antigravity, Claude Code, Gemini CLI, OpenCode, and MCP
-
----
-
-## 2. File Structure (After Reorganization)
+## Package layout
 
 ```text
-~/.gemini/                                    ← GLOBAL (all repos)
-└── antigravity/modules/                      ← Modular structure
-    ├── github-lifecycle/
-    │   ├── global-rules/GEMINI.md
-    │   └── workflows/*                       ← /create-github-epic, etc.
-    └── resilient-sdlc/
-        ├── global-rules/resilient-sdlc.md
-        ├── workflows/apply-resilient-sdlc.md
-        └── skills/resilient-sdlc/SKILL.md
-
-<any-repo>/.agents/                           ← LOCAL (project-specific)
-├── rules/
-│   ├── github_lifecycle.md                   ← Lifecycle governance
-│   ├── cli_proxy_config.md                   ← Config path enforcement
-│   └── linux_build_perplexity.md             ← Cross-compilation guard
-└── workflows/
-    └── (empty — all GitHub workflows are global)
+skills/
+├── github-issue-lifecycle/
+│   ├── SKILL.md
+│   └── references/
+│       ├── github-access.md
+│       ├── read-github-issues.md
+│       ├── search-github-issues.md
+│       ├── create-github-epic.md
+│       ├── implement-github-epic.md
+│       ├── update-github-issue.md
+│       └── complete-github-task.md
+└── impact-scope-reduction/
+    └── SKILL.md
 ```
 
----
+Every skill directory has a required `SKILL.md` with `name` and `description` frontmatter. Supporting files stay inside that directory so installers copy the complete skill.
 
-## 3. Architecture Diagrams
-
-### 3.1 Issue Lifecycle State Machine
-
-```mermaid
-stateDiagram-v2
-    direction LR
-
-    [*] --> Discovery: Start conversation
-
-    state Discovery {
-        [*] --> ReadIssues: /read-github-issue
-        ReadIssues --> SearchIssues: Need specific context?
-        SearchIssues --> ContextReady
-        ReadIssues --> ContextReady
-    }
-
-    Discovery --> Planning: Task understood
-
-    state Planning {
-        [*] --> CreateEpic: /create-github-epic
-        CreateEpic --> CreateSubtasks
-        CreateSubtasks --> DocumentCode: MANDATORY
-        DocumentCode --> LinkSubtasks
-    }
-
-    Planning --> Development: Subtasks assigned
-
-    state Development {
-        [*] --> Implement
-        Implement --> LogProgress: /update-github-issue
-        LogProgress --> Implement: Continue
-        Implement --> Verify
-        Verify --> Implement: Failed
-    }
-
-    Development --> Completion: All verified
-
-    state Completion {
-        [*] --> PostSummary: /complete-github-task
-        PostSummary --> CloseIssue
-        CloseIssue --> UpdateEpic
-    }
-
-    Completion --> [*]: Done
-```
-
-### 3.2 MANDATORY Code Documentation Flow
-
-```mermaid
-flowchart TD
-    A[Code Change Made] --> B{New file or Modified?}
-
-    B -->|NEW file| C[Post FULL source code<br>in fenced code block]
-    B -->|MODIFIED file| D[Post diff/snippets<br>showing key changes]
-
-    C --> E[Write WHAT was created]
-    D --> E
-
-    E --> F[Write WHY<br>technical reasoning + architectural intent]
-    F --> G[Post as GitHub comment<br>ONE comment per file]
-    G --> H{More files?}
-    H -->|Yes| A
-    H -->|No| I[Done]
-
-    style C fill:#2d5016,color:#fff
-    style D fill:#1a3a5c,color:#fff
-    style G fill:#5c1a1a,color:#fff
-```
-
-### 3.3 Global vs Local Rule Resolution
-
-```mermaid
-flowchart TB
-    subgraph GLOBAL["Global Layer (~/.gemini/)"]
-        direction TB
-        subgraph MODULE1["github-lifecycle"]
-            direction TB
-            G1["GEMINI.md<br><i>Behavioral constraints</i>"]
-            G2["create-github-epic.md"]
-            G3["read-github-issue.md"]
-            G4["search-github-issue.md"]
-            G5["update-github-issue.md"]
-            G6["complete-github-task.md"]
-        end
-        subgraph MODULE2["resilient-sdlc"]
-            direction TB
-            G7["resilient-sdlc.md<br><i>Resilient SDLC Rule</i>"]
-            G8["apply-resilient-sdlc.md<br><i>Resilient Validation</i>"]
-        end
-    end
-
-    subgraph LOCAL["Local Layer (.agents/)"]
-        direction TB
-        L1["github_lifecycle.md<br><i>Full lifecycle governance</i>"]
-        L2["cli_proxy_config.md<br><i>Project paths</i>"]
-        L3["linux_build_perplexity.md<br><i>Build guard</i>"]
-    end
-
-    subgraph AGENT["Any Agent CLI"]
-        direction TB
-        A1["Antigravity"]
-        A2["Claude Code"]
-        A3["Gemini CLI"]
-        A4["OpenCode"]
-        A5["Future MCP"]
-    end
-
-    GLOBAL --> AGENT
-    LOCAL --> AGENT
-
-    style GLOBAL fill:#1a1a2e,color:#e0e0e0,stroke:#4a4a8a
-    style LOCAL fill:#2e1a1a,color:#e0e0e0,stroke:#8a4a4a
-    style AGENT fill:#1a2e1a,color:#e0e0e0,stroke:#4a8a4a
-```
-
-### 3.4 Future MCP Server Architecture
+## Discovery and installation
 
 ```mermaid
 flowchart LR
-    subgraph MCP_SERVER["github-lifecycle-mcp"]
-        direction TB
-        T1["tool: create_epic<br><i>Plan → Epic + Subtasks</i>"]
-        T2["tool: document_changes<br><i>File-by-file code comments</i>"]
-        T3["tool: read_context<br><i>Gather issue history</i>"]
-        T4["tool: log_progress<br><i>Update/blocker</i>"]
-        T5["tool: close_task<br><i>Verify + close</i>"]
-        T6["tool: search_issues<br><i>Keyword search</i>"]
-
-        R1["resource: issue/{id}<br><i>Read issue details</i>"]
-        R2["resource: epic/{id}/subtasks<br><i>List subtask statuses</i>"]
-
-        P1["prompt: epic_template<br><i>Structured Epic body</i>"]
-        P2["prompt: code_comment<br><i>File documentation format</i>"]
-    end
-
-    subgraph CLIENTS["Agent Clients"]
-        C1["Antigravity"]
-        C2["Claude Code"]
-        C3["Gemini CLI"]
-        C4["Cursor"]
-        C5["OpenCode"]
-    end
-
-    CLIENTS <-->|"MCP Protocol<br>(stdio / SSE)"| MCP_SERVER
-    MCP_SERVER <-->|"gh CLI / GitHub API"| GH["GitHub"]
-
-    style MCP_SERVER fill:#0d1117,color:#c9d1d9,stroke:#30363d
-    style CLIENTS fill:#161b22,color:#c9d1d9,stroke:#30363d
-    style GH fill:#238636,color:#fff
+    R[GitHub repository] --> D[npx skills discovery]
+    D --> G[github-issue-lifecycle]
+    D --> I[impact-scope-reduction]
+    G --> A[Selected agent skill directory]
+    I --> A
+    A --> X[Agent auto-trigger by name and description]
 ```
 
----
+The standard `skills/<name>/SKILL.md` layout lets the CLI list both skills without an npm package, manifest, or agent-specific symlink script.
 
-## 4. Workflow Details
+## Skill boundaries
 
-### `/create-github-epic` — Plan → Epic + Subtasks + Code Docs
-1. Read `implementation_plan.md` artifact
-2. Create Epic issue (full detail, not summarized)
-3. Create Subtask issues linked to Epic
-4. **MANDATORY**: Post 1 comment per file with code
-5. Link all subtasks back to Epic
+### `github-issue-lifecycle`
 
-### `/read-github-issue` — Context Gathering
-1. List 10 latest closed issues
-2. List 10 latest open issues
-3. Deep-dive specific issues if relevant
-4. Summarize context for current task
+Owns durable GitHub Issue tracking:
 
-### `/search-github-issue` — Historical Search
-1. Define keyword from user request
-2. Search via `gh issue list --search`
-3. Fallback to local `grep` if needed
-4. Deep-dive relevant results
-5. Apply findings to implementation
+1. Read recent issue context.
+2. Search for prior decisions and duplicate work.
+3. Convert implementation plans into Epics with native sub-issues.
+4. Track implementation with one task-level change summary.
+5. Record progress, blockers, decisions, and handoffs.
+6. Verify and close completed work.
 
-### `/update-github-issue` — Progress / Blocker Logging
-1. Draft update to temp file
-2. Post comment via `gh issue comment`
-3. Update dependency relationships if needed
+The skill uses `gh` by default and a shared REST reference as fallback, with no agent-platform integration dependency. The entrypoint routes to one reference at a time so agents do not load every workflow for a single operation.
 
-### `/complete-github-task` — Verification + Close
-1. Summarize work and changes
-2. Attach verification proof
-3. Comment + close the issue
-4. Update Epic checklist
+### `impact-scope-reduction`
 
----
+Owns blast-radius control across the SDLC:
 
-## 5. Portability Mapping
+1. Identify the exact change and dependency scope.
+2. Keep code responsibilities cohesive without speculative abstractions.
+3. Expand focused tests according to contract, data, security, and compatibility risk.
+4. Use environment-appropriate rollouts and restart the smallest safe unit.
+5. Protect databases, caches, queues, and loaded AI models from unrelated disruption.
+6. Verify both the changed service and unaffected dependencies.
 
-| Concept | Antigravity | Claude Code | Gemini CLI | OpenCode | MCP |
-|:--------|:------------|:------------|:-----------|:---------|:----|
-| **Global Rules** | `~/.gemini/GEMINI.md` | `~/.claude/CLAUDE.md` | `~/.gemini/GEMINI.md` | `~/.opencode/rules.md` | Server config |
-| **Local Rules** | `.agents/rules/*.md` | `.claude/rules/*.md` | `.gemini/rules/*.md` | `.opencode/rules/*.md` | N/A (embedded) |
-| **Workflows** | `global_workflows/*.md` | `.claude/commands/*.md` | `global_workflows/*.md` | N/A | `tools` |
-| **Slash Commands** | `/create-github-epic` | `/create-github-epic` | `/create-github-epic` | N/A | `tool_call` |
-| **Turbo/Auto-run** | `// turbo-all` | `allowedTools` | `// turbo-all` | N/A | `confirmation: false` |
+This skill is self-contained because its workflow is short and has no conditional reference material.
 
----
+## GitHub lifecycle
 
-## 6. Changelog
+```mermaid
+stateDiagram-v2
+    [*] --> Discovery
+    Discovery --> Planning: context ready
+    Planning --> Implementation: authorized
+    Implementation --> Verification: tasks complete
+    Verification --> Implementation: failed
+    Verification --> Closure: passed
+    Closure --> [*]
+```
 
-| Date | Action | Details |
-|:-----|:-------|:--------|
-| 2026-04-12 | Initial creation | Audited 10 files, identified 3 issues |
-| 2026-04-12 | Migrated 4 workflows | `read/search/update/complete` → global |
-| 2026-04-12 | Deduplicated GEMINI.md | Removed CLI recipe duplication |
-| 2026-04-12 | Merged lifecycle rule | `github_issues_mandatory.md` → `github_lifecycle.md` |
-| 2026-04-12 | Deleted deprecated files | 5 files removed from local `.agents/` |
-| 2026-04-14 | Added Resilient SDLC | Copied SOLID & Impact Scope architecture rules to global |
-| 2026-04-14 | Modularized Repository | Split tools into github-lifecycle and resilient-sdlc modules |
+External GitHub writes remain subject to the request's authorization. Read-only discovery does not imply permission to create, comment on, edit, or close issues.
+
+## Changelog
+
+| Date | Change |
+|:--|:--|
+| 2026-04-12 | Created the GitHub Issue lifecycle workflows. |
+| 2026-04-14 | Added resilient SDLC and impact-scope guidance. |
+| 2026-08-25 | Converted Gemini/Antigravity modules into two portable Agent Skills: `github-issue-lifecycle` and `impact-scope-reduction`. |
