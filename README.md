@@ -1,4 +1,4 @@
-# GitHub Planner Agent Skills
+# GitHub SDLC Agent Skills
 
 Two portable [Agent Skills](https://agentskills.io) installable through Vercel's `skills` CLI. The same source works with Codex, Claude Code, Gemini/Antigravity, OpenCode, Cursor, and other supported agents.
 
@@ -17,26 +17,26 @@ Applies SOLID, risk-based testing, and targeted operations to reduce change blas
 List the skills before installing:
 
 ```sh
-npx skills add billythekidz/agents-github-planner-skill --list
+npx skills add billythekidz/github-sdlc-agent-skills --list
 ```
 
 Install interactively to detected agents:
 
 ```sh
-npx skills add billythekidz/agents-github-planner-skill
+npx skills add billythekidz/github-sdlc-agent-skills
 ```
 
 Install one skill globally:
 
 ```sh
-npx skills add billythekidz/agents-github-planner-skill --skill github-issue-lifecycle -g
-npx skills add billythekidz/agents-github-planner-skill --skill impact-scope-reduction -g
+npx skills add billythekidz/github-sdlc-agent-skills --skill github-issue-lifecycle -g
+npx skills add billythekidz/github-sdlc-agent-skills --skill impact-scope-reduction -g
 ```
 
 Install both skills globally to every supported agent:
 
 ```sh
-npx skills add billythekidz/agents-github-planner-skill --all -g
+npx skills add billythekidz/github-sdlc-agent-skills --all -g
 ```
 
 ## Structure
